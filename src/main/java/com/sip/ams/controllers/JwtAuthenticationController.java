@@ -33,39 +33,42 @@ public class JwtAuthenticationController {
 	@Autowired
 	private UserDetailsService jwtInMemoryUserDetailsService;
 
-	@RequestMapping(value = {"/auth"}, method = RequestMethod.POST)
-	
-	public ResponseEntity<?> generateAuthenticationToken(@RequestBody JwtRequest authenticationRequest)
+	@RequestMapping(value = { "/auth" }, method = RequestMethod.POST)
+
+	public JwtResponse generateAuthenticationToken(@RequestBody JwtRequest authenticationRequest)
 			throws Exception {
-		
-		
+
 		// Spring security : elle vérifie si l'user(username, password) existe ou pas
-		
+
 		authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
-        
+
 		final UserDetails userDetails = jwtInMemoryUserDetailsService
 				.loadUserByUsername(authenticationRequest.getUsername());
 
 		// génération du Token
-		
-		final String token = jwtTokenUtil.generateToken(userDetails);
 
-		return ResponseEntity.ok(new JwtResponse(token));
+		final String token = jwtTokenUtil.generateToken(userDetails);
+		// je suppose que le user a les info suivantes:
+		// return ResponseEntity.ok(new JwtResponse(token));
+
+		//return ResponseEntity.ok(new JwtResponse(token, "Med Amine Mezghich", "Admin"));
+		
+		return new JwtResponse(token, "Med Amine Mezghich", "Admin");
 	}
 
 	private void authenticate(String username, String password) throws Exception {
 		try {
-			
+
 			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-			
+
 		} catch (DisabledException e) {
 			throw new Exception("USER_DISABLED", e);
 		} catch (BadCredentialsException e) {
 			throw new Exception("INVALID_CREDENTIALS", e);
 		}
-		
+
 		catch (Exception e) {
-			//throw new Exception("INVALID_CREDENTIALS", e);
+			// throw new Exception("INVALID_CREDENTIALS", e);
 			e.printStackTrace();
 		}
 	}
